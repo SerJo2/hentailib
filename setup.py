@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='hentailib',
-    version='0.5.0',
+    version='0.5.1',
     packages=[''],
     url='https://github.com/SerJo2/hentailib',
     license='MIT',
