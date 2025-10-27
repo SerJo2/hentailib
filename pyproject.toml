@@ -11,7 +11,7 @@ keywords = ["hentai", "requests", "rule34"]
 authors = [
   {name = "Onii-Chan", email = "skobochki.ad@mail.ru"}
 ]
-version = "0.5.1"
+version = "0.5.2"
 
 requires-python = ">=3.9"
 classifiers = [
@@ -47,3 +47,9 @@ dependencies = [
 Repository = "https://github.com/SerJo2/hentailib"
 Issues = "https://github.com/SerJo2/hentailib/issues"
 Changelog = "https://github.com/SerJo2/hentailib/blob/master/CHANGELOG.md"
+
+[tool.setuptools]
+packages = {find = {where = ["src"]}}
+
+[tool.setuptools.package-dir]
+"" = "src"

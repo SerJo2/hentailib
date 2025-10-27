@@ -89,10 +89,8 @@ class Utils:
                                     params=params, timeout=10)
             response.raise_for_status()
             data = response.json()
-            print(data)
             data = choice(data)
             page_id = data["id"]
-            print(data["id"])
             return TitleClass(page_id, self.site_api)
 
         except requests.exceptions.RequestException as e:
@@ -185,7 +183,6 @@ class TitleClass:
                                     params=params, timeout=10)
 
             response.raise_for_status()
-            print(response.text)
             data = response.json()
 
             self.url = data[0]["file_url"]
