@@ -181,6 +181,8 @@ class TitleClass:
 
             response = requests.get(self.site_api.base_url + self.site_api.api_key,
                                     params=params, timeout=10)
+            if response.text == "Missing authentication. Go to api.rule34.xxx for more information":
+                raise ApiKeyError
 
             response.raise_for_status()
             data = response.json()
@@ -207,3 +209,10 @@ class PageLoadError(Exception):
     def __init__(self, message="An unexpected custom error occurred."):
         self.message = message
         super().__init__(self.message)
+
+class ApiKeyError(Exception):
+    def __init__(self, message="Api key is wrong"):
+        self.message = message
+        super().__init__(self.message)
+
+
