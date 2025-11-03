@@ -15,6 +15,13 @@ def api_key():
     return key
 
 @pytest.fixture
-def api_client(api_key):
-    return Rule34Api(api_key)
+def user_id():
+    user_id = os.getenv("HENTAILIB_USER_ID")
+    if not user_id:
+        pytest.skip("User_id is not set up")
+    return user_id
+
+@pytest.fixture
+def api_client(api_key, user_id):
+    return Rule34Api(api_key, user_id)
 
