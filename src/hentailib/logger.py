@@ -1,22 +1,28 @@
 import logging
+import sys
 
-from .config import Confing
-def base_logger(name, log_file, level=logging.INFO):
-    """Sets up a logger with the specified name, file, and level."""
 
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
+def setup_logging(debug=False):
 
-    if not logger.handlers:
-        # Создаем обработчик для файла
-        handler = logging.FileHandler(log_file, encoding='utf-8')
-        handler.setLevel(level)
+    # Очищаем предыдущие настройки
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
 
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
+    if debug:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S',
+            handlers=[
+                logging.FileHandler('app.log', encoding='utf-8'),
+                logging.StreamHandler(sys.stdout)  # Вывод в консоль
+            ]
         )
-        handler.setFormatter(formatter)
+        logging.getLogger().info("Логирование в debug режиме включено")
+    else:
+        logging.basicConfig(level=logging.ERROR)
+        logging.getLogger().setLevel(logging.ERROR)
 
-        logger.addHandler(handler)
-    return logger
+
+def get_logger(name):
+    return logging.getLogger(name)

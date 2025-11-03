@@ -1,11 +1,13 @@
-from sys import audit
+
 
 import requests
 from random import choice
 from typing import Optional, List
 
-from .logger import base_logger
-from .config import Confing
+
+from .logger import get_logger, setup_logging
+
+__name__ = "hentailib"
 
 
 class Rule34Api:
@@ -18,7 +20,7 @@ class Rule34Api:
 
     """
 
-    def __init__(self, api_key: str, user_id: str, base_url: str = "https://api.rule34.xxx/index.php?page=dapi&s=post&q=index"):
+    def __init__(self, api_key: str, user_id: str, base_url: str = "https://api.rule34.xxx/index.php?page=dapi&s=post&q=index", debug_mode=False):
         """Initializes Rule34Api class with the given parameters.
 
         Args:
@@ -27,11 +29,13 @@ class Rule34Api:
 
         """
 
-        self.api_key = api_key
-        self.user_id = user_id
+        if not api_key or not user_id:
+            raise ValueError("API key and user ID are required")
+
+        self.api_key = api_key.strip()
+        self.user_id = user_id.strip()
         self.base_url = base_url
-        self.main_logger = base_logger('hentailib', 'hentailib.log')
-        self._utils = Utils(self, self.main_logger)
+        self._utils = Utils(self)
 
 
     @property
@@ -55,7 +59,7 @@ class Rule34Api:
         """
         if int(page_id) <= 0:
             raise ValueError("page_id must be positive")
-        return TitleClass(page_id, self, self.main_logger)
+        return TitleClass(page_id, self)
 
 
 class Utils:
@@ -66,14 +70,13 @@ class Utils:
 
     """
 
-    def __init__(self, site_api: Rule34Api, _logger):
+    def __init__(self, site_api: Rule34Api):
         """Initializes Utils with the given parameters.
 
         Args:
             site_api (Rule34Api): Api Class for use a Rule34 Api
         """
         self.site_api = site_api
-        self.main_logger = _logger
 
     def get_random_page(self, tags: str, limit=100, do_autocomplete=True) -> Optional['TitleClass']:
         """Get a random page from Rule34 with given tags
@@ -87,8 +90,9 @@ class Utils:
             TitleClass: Page from Rule34
         """
         try:
-            tags = self.autocomplete_multiple_tags(tags)
-            self.main_logger.warning(tags)
+            if do_autocomplete:
+                tags = self.autocomplete_multiple_tags(tags)
+            get_logger(__name__).warning(tags)
 
             params = {
                 "limit": limit,
@@ -101,25 +105,25 @@ class Utils:
 
             response = requests.get(self.site_api.base_url,
                                     params=params, timeout=10)
-            if response.text == "":
-                self.main_logger.warning("Not found page with tags: " + tags)
-                NotFoundError()
-            if response.json() == "Missing authentication. Go to api.rule34.xxx for more information":
-                self.main_logger.info("Missing api auth")
-                raise ApiKeyError()
+            if not response.text.strip():
+                get_logger(__name__).warning("Not found page with tags: " + tags)
+                raise NotFoundError("Not found page with tags: " + tags)
+            if "Missing authentication" in response.text:
+                get_logger(__name__).warning("Missing api auth")
+                raise ApiKeyError("Invalid API credentials")
             response.raise_for_status()
             data = response.json()
             data = choice(data)
             page_id = data["id"]
-            self.main_logger.info("Successfully get page with id: " + str(page_id))
-            return TitleClass(page_id, self.site_api, self.main_logger)
+            get_logger(__name__).info("Successfully get page with id: " + str(page_id))
+            return TitleClass(page_id, self.site_api)
 
 
         except requests.exceptions.Timeout:
-            self.main_logger.warning("Request timeout")
+            get_logger(__name__).warning("Request timeout")
             raise PageLoadError("Request timeout")
         except requests.exceptions.HTTPError as e:
-            self.main_logger.warning("HTTP status error")
+            get_logger(__name__).warning("HTTP status error")
             raise ApiKeyError("HTTP status error")
 
     def get_pages_by_tags(self, tags: List[str]) -> List['TitleClass']:
@@ -143,7 +147,7 @@ class Utils:
             text = text[1:]
 
         response = requests.get("https://api.rule34.xxx/autocomplete.php?q=" + text).json()
-        self.main_logger.info("Successfully autocompleted one tag")
+        get_logger(__name__).info("Successfully autocompleted one tag")
         return attrs + response[ranking]["value"]
 
     def autocomplete_multiple_tags(self, tags: str):
@@ -157,10 +161,10 @@ class Utils:
                 completed_tag = self.autocomplete_single_tag(tag)
                 autocompleted_tags.append(completed_tag)
             except Exception as e:
-                self.main_logger.warning("Exception with autocompleted tag: " + str(e))
+                get_logger(__name__).warning("Exception with autocompleted tag: " + str(e))
                 pass
 
-        self.main_logger.info("Successfully autocompleted multiple tags")
+        get_logger(__name__).info("Successfully autocompleted multiple tags")
         return " ".join(autocompleted_tags)
 
 
@@ -181,7 +185,7 @@ class TitleClass:
 
     """
 
-    def __init__(self, page_id: int, site_api: Rule34Api, _logger):
+    def __init__(self, page_id: int, site_api: Rule34Api):
         """Initializes TitleClass with the given parameters.
 
         Calls __get_data() to request title data.
@@ -200,7 +204,6 @@ class TitleClass:
         self.score = None
         self.source = None
         self.tags = None
-        self.main_logger = _logger
 
         self._get_data()
 
@@ -221,7 +224,7 @@ class TitleClass:
             response = requests.get(self.site_api.base_url,
                                     params=params, timeout=10)
             if response.json() == "Missing authentication. Go to api.rule34.xxx for more information":
-                self.main_logger.warning("Missing Auth")
+                get_logger(__name__).warning("Missing Auth")
                 raise ApiKeyError()
 
             response.raise_for_status()
@@ -236,16 +239,16 @@ class TitleClass:
             self.tags = data[0]["tags"]
 
         except requests.exceptions.HTTPError as e:
-            self.main_logger.warning("HTTPError")
+            get_logger(__name__).warning("HTTPError")
             raise HTTPStatusError(str(e))
         except requests.exceptions.RequestException as e:
-            self.main_logger.warning(f"Can't load page with id: {self.id}")
+            get_logger(__name__).warning(f"Can't load page with id: {self.id}")
             raise PageLoadError(f"Can't load page {self.id}: {e}")
         except KeyError as e:
-            self.main_logger.warning(f"KeyError: {e}")
+            get_logger(__name__).warning(f"KeyError: {e}")
             raise PageLoadError(f"KeyError {e}")
 
-        self.main_logger.info("Get data from Rule34Api successfully")
+        get_logger(__name__).info("Get data from Rule34Api successfully")
 
 
 class PageLoadError(Exception):
