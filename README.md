@@ -1,7 +1,7 @@
 # Placeholder for now
 [![CodeFactor](https://www.codefactor.io/repository/github/serjo2/hentailibbadge)](https://www.codefactor.io/repository/github/serjo2/hentailib)
 
-# 🎓 FESTU Timetable Library
+# 🎓 Hentailib
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Лицензия: MIT](https://img.shields.io/badge/Лицензия-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
