@@ -7,7 +7,7 @@ from typing import Optional, List
 
 from .logger import get_logger, setup_logging
 
-__name__ = "hentailib"
+__debug_name__ = "hentailib"
 __hentailib_debug__ = True
 
 
@@ -34,13 +34,13 @@ class Rule34Api:
             raise ValueError("API key and user ID are required")
 
         setup_logging(debug_mode)
-        self.logger = get_logger(__name__)
+        self.logger = get_logger(__debug_name__)
 
         self.api_key = api_key
         self.user_id = user_id
         self.base_url = base_url.rstrip('?&')
         self._utils = Utils(self)
-        self.session = requests.Session()  # Использование сессии
+        self.session = requests.Session()
 
 
     @property
@@ -66,6 +66,14 @@ class Rule34Api:
             raise ValueError("page_id must be positive")
         return TitleClass(page_id, self)
 
+    def _check_api_error(self, response):
+        if "Missing authentication" in response.text:
+            self.logger.error("API authentication failed")
+            raise ApiKeyError("Invalid API credentials")
+        if not response.text.strip():
+            self.logger.warning("Empty response from API")
+            raise NotFoundError("Empty response from API")
+
 
 class Utils:
     """Class Utils contains various utilities for working with rule34.
@@ -82,7 +90,7 @@ class Utils:
             site_api (Rule34Api): Api Class for use a Rule34 Api
         """
         self.site_api = site_api
-        self.logger = get_logger(__name__)
+        self.logger = get_logger(__debug_name__)
 
     def get_random_page(self, tags: str, limit=100, do_autocomplete=True) -> Optional['TitleClass']:
         """Get a random page from Rule34 with given tags
@@ -109,7 +117,7 @@ class Utils:
 
             }
 
-            response = requests.get(self.site_api.base_url,
+            response = self.site_api.session.get(self.site_api.base_url,
                                     params=params, timeout=10)
             if not response.text.strip():
                 self.logger.warning("Not found page with tags: " + tags)
@@ -148,11 +156,11 @@ class Utils:
         """
 
         attrs = ""
-        if text[0] == "-":
+        if text.startswith("-"):
             attrs = "-"
             text = text[1:]
 
-        response = requests.get(
+        response = self.site_api.session.get(
             "https://api.rule34.xxx/autocomplete.php",
             params={"q": text},
             timeout=5
@@ -220,7 +228,7 @@ class TitleClass:
         self.score = None
         self.source = None
         self.tags = None
-        self.logger = get_logger(__name__)
+        self.logger = get_logger(__debug_name__)
 
         self._get_data()
 
