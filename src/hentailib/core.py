@@ -8,7 +8,7 @@ from typing import Optional, List
 from .logger import get_logger, setup_logging
 
 __debug_name__ = "hentailib"
-__hentailib_debug__ = True
+__hentailib_debug__ = False
 
 
 class Rule34Api:
@@ -52,25 +52,25 @@ class Rule34Api:
         """
         return self._utils
 
-    def get_title(self, page_id: int) -> 'TitleClass':
+    def get_title(self, page_id: int) -> 'Title':
         """
 
         Args:
             page_id: Page id
 
         Returns:
-            TitleClass: Contains information about the requested title
+            Title: Contains information about the requested title
 
         """
         if int(page_id) <= 0:
             raise ValueError("page_id must be positive")
-        return TitleClass(page_id, self)
+        return Title(page_id, self)
 
     def _check_api_error(self, response):
-        if "Missing authentication" in response.text:
+        if "Missing authentication" in response:
             self.logger.error("API authentication failed")
             raise ApiKeyError("Invalid API credentials")
-        if not response.text.strip():
+        if not response:
             self.logger.warning("Empty response from API")
             raise NotFoundError("Empty response from API")
 
@@ -92,7 +92,7 @@ class Utils:
         self.site_api = site_api
         self.logger = get_logger(__debug_name__)
 
-    def get_random_page(self, tags: str, limit=100, do_autocomplete=True) -> Optional['TitleClass']:
+    def get_random_page(self, tags: str, limit=100, do_autocomplete=True) -> Optional['Title']:
         """Get a random page from Rule34 with given tags
 
         Args:
@@ -101,12 +101,11 @@ class Utils:
             do_autocomplete (bool): Will autocomplete from the site be used
 
         Returns:
-            TitleClass: Page from Rule34
+            Title: Page from Rule34
         """
         try:
             if do_autocomplete:
                 tags = self.autocomplete_multiple_tags(tags)
-            self.logger.warning(tags)
 
             params = {
                 "limit": limit,
@@ -119,18 +118,17 @@ class Utils:
 
             response = self.site_api.session.get(self.site_api.base_url,
                                     params=params, timeout=10)
-            if not response.text.strip():
-                self.logger.warning("Not found page with tags: " + tags)
-                raise NotFoundError("Not found page with tags: " + tags)
-            if "Missing authentication" in response.text:
-                self.logger.warning("Missing api auth")
-                raise ApiKeyError("Invalid API credentials")
+            self.site_api._check_api_error(response.json())
+
+
             response.raise_for_status()
             data = response.json()
             data = choice(data)
+            if not data:
+                raise NotFoundError(f"No pages found with tags: {tags}")
             page_id = data["id"]
             self.logger.info("Successfully get page with id: " + str(page_id))
-            return TitleClass(page_id, self.site_api)
+            return Title(page_id, self.site_api)
 
 
         except requests.exceptions.Timeout:
@@ -140,7 +138,7 @@ class Utils:
             self.logger.warning("HTTP status error")
             raise ApiKeyError("HTTP status error")
 
-    def get_pages_by_tags(self, tags: List[str]) -> List['TitleClass']:
+    def get_pages_by_tags(self, tags: List[str]) -> List['Title']:
         pass
 
 
@@ -193,7 +191,7 @@ class Utils:
 
 
 
-class TitleClass:
+class Title:
     """A class containing information about a specific title
 
     Attributes:
@@ -210,7 +208,7 @@ class TitleClass:
     """
 
     def __init__(self, page_id: int, site_api: Rule34Api):
-        """Initializes TitleClass with the given parameters.
+        """Initializes Title with the given parameters.
 
         Calls __get_data() to request title data.
 
@@ -246,14 +244,15 @@ class TitleClass:
 
             }
 
-            response = requests.get(self.site_api.base_url,
+            response = self.site_api.session.get(self.site_api.base_url,
                                     params=params, timeout=10)
-            if response.json() == "Missing authentication. Go to api.rule34.xxx for more information":
-                self.logger.warning("Missing Auth")
-                raise ApiKeyError()
+            self.site_api._check_api_error(response.json())
 
             response.raise_for_status()
             data = response.json()
+
+            if not data:
+                raise NotFoundError(f"No data found for page ID: {self.id}")
 
             self.url = data[0]["file_url"]
             self.width = data[0]["width"]

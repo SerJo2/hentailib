@@ -9,24 +9,24 @@
 [![Скачивания PyPI](https://img.shields.io/pypi/dm/hentailib.svg)](https://pypi.org/project/hentailib/)
 English | [Russian](https://github.com/SerJo2/hentailib-lib/blob/master/README.ru.md)
 
-A Python library for easy access and manipulation of hentai Sites
-
+A Python library for easy access and manipulation of FESTU (Far Eastern State Transport University) class schedules.
+Библиотека для удобного получения и работы с хентай сайтами
 ## ✨ Features
 
-- 🚀 Simple and intuitive API
-- 📅 Get random page or page by id from Rule34
+- 🚀 Простой и интуитивно понятный API
+- 📅 Получение случайно страницы или страницы по id
 - 🛡️ Full type annotations and error handling
-- 📚 Comprehensive documentation
-- ✨ Automatically autocomplete tags
+- 📚 Полная типизация и обработка ошибок
+- ✨ Автоматическое автодополнение тэгов
 
-## 📦 Installation
+## 📦 Установка
 
 ```bash
 pip install hentailib
 ```
 
-## 🚀 Quick Start
-Get random page picture url
+## 🚀 Быстрый стартt
+Получение url случайной страницы с rule34
 ```python
 from hentailib import Rule34Api
 
@@ -39,7 +39,7 @@ response = client.utils.get_random_page("hu_tao")
 # print url
 print(response.url)
 ```
-Get page by id
+Получение страницы по id
 ```python
 from hentailib import Rule34Api
 
@@ -54,10 +54,10 @@ print(response.url)
 ```
 
 ## 🐛 Bug Reports and Issues
-If you find a bug or have a feature request, please create an issue on GitHub.
+Если вы обнаружили ошибку или у вас есть предложение по улучшению, создайте [issue](https://github.com/SerJo2/hentailib/issues) на GitHub.
 
-## 🤝 Development
-Development Installation
+## 🤝 Разработка
+Установка для разработки
 ```bash
 git clone https://github.com/SerJo2/hentailib.git
 cd hentailib
@@ -67,10 +67,10 @@ Running Tests
 pytest tests/ -v
 ```
 ## 📄 License
-This project is licensed under the MIT License. See the [LICENSE](https://github.com/SerJo2/hentailib-lib/blob/master/LICENSE) file for details.
+Этот проект распространяется под лицензией MIT. Подробнее см. в файле [LICENSE](https://github.com/SerJo2/hentailib/blob/master/LICENSE).
 
-## 👨‍💻 Author
+## 👨‍💻 Автор
 #### Onii-Chan
 - Email: skobochki.ad@mail.ru
 - GitHub: [SerJo2](https://github.com/SerJo2)
-## ⭐ If this project helped you, please give it a star on GitHub!
+## ⭐ ⭐ Не забудьте поставить звезду на GitHub, если проект вам помог!
