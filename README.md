@@ -4,9 +4,9 @@
 # 🎓 Hentailib
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![Лицензия: MIT](https://img.shields.io/badge/Лицензия-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Версия PyPI](https://img.shields.io/pypi/v/hentailib.svg)](https://pypi.org/project/hentailib/)
-[![Скачивания PyPI](https://img.shields.io/pypi/dm/hentailib.svg)](https://pypi.org/project/hentailib/)
+[![Licence: MIT](https://img.shields.io/badge/Лицензия-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version PyPI](https://img.shields.io/pypi/v/hentailib.svg)](https://pypi.org/project/hentailib/)
+[![Download PyPI](https://img.shields.io/pypi/dm/hentailib.svg)](https://pypi.org/project/hentailib/)
 English | [Russian](https://github.com/SerJo2/hentailib-lib/blob/master/README.ru.md)
 
 A Python library for easy access and manipulation of hentai Sites
