@@ -1,4 +1,4 @@
-from importlib.metadata import version
+
 
 import pytest
 
@@ -9,4 +9,8 @@ def test_import():
     assert hentailib is not None
 
 def test_version():
-    assert version("hentailib") is not None
+    import tomllib
+    with open("pyproject.toml", "rb") as f:
+        data = tomllib.load(f)
+    version = data["project"]["version"]
+    assert version == "0.5.3"
